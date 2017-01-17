@@ -1,0 +1,27 @@
+{
+  "name": "postcss-plumber",
+  "version": "0.0.1",
+  "description": "Postcss plugin for Plumber",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://jamonserrano@github.com/jamonserrano/postcss-plumber.git"
+  },
+  "keywords": [
+    "plumber",
+    "vertical-rhythm",
+    "typography",
+    "baseline-grid",
+    "css",
+    "postcss-plugin"
+  ],
+  "author": "Viktor Honti",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jamonserrano/postcss-plumber/issues"
+  },
+  "homepage": "https://github.com/jamonserrano/postcss-plumber#readme"
+}
