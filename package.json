@@ -23,5 +23,13 @@
   "bugs": {
     "url": "https://github.com/jamonserrano/postcss-plumber/issues"
   },
-  "homepage": "https://github.com/jamonserrano/postcss-plumber#readme"
+  "homepage": "https://github.com/jamonserrano/postcss-plumber#readme",
+  "devDependencies": {
+    "ava": "^0.17.0",
+    "eslint-config-postcss": "^2.0.2",
+    "xo": "^0.17.1"
+  },
+  "dependencies": {
+    "postcss": "^5.2.11"
+  }
 }
