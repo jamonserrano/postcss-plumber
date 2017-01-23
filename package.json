@@ -4,7 +4,9 @@
   "description": "Postcss plugin for Plumber",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "lint": "xo index.js --extend eslint-config-postcss",
+    "test": "npm run lint && ava",
+    "watch": "npm test -- --watch"
   },
   "repository": {
     "type": "git",
@@ -30,6 +32,7 @@
     "xo": "^0.17.1"
   },
   "dependencies": {
+    "camelcase": "^4.0.0",
     "postcss": "^5.2.11"
   }
 }
