@@ -8,7 +8,8 @@ const defaults = {
     gridHeight: '1rem',
     lineHeight: 3,
     leadingTop: 1,
-    leadingBottom: 2
+    leadingBottom: 2,
+    useBaselineOrigin: false
 };
 
 module.exports = postcss.plugin(pluginName, (options = {}) => {
@@ -16,14 +17,14 @@ module.exports = postcss.plugin(pluginName, (options = {}) => {
     options = Object.assign(defaults, options);
     return function (css, result) {
         css.walkAtRules(pluginName, rule => {
-            // merge actual parameters into options
+            // merge current parameters into options
             let params = Object.assign({}, options);
             rule.walkDecls(decl => {
                 params[camelCase(decl.prop)] = decl.value;
             });
 
             // sanitize values
-            Object.keys(params).forEach((prop) => {
+            Object.keys(params).forEach(prop => {
                 let value = params[prop];
                 // separate value and unit
                 if (prop === 'gridHeight') {
@@ -38,11 +39,30 @@ module.exports = postcss.plugin(pluginName, (options = {}) => {
                 params[prop] = value;
             });
 
-            console.log(params);
-            // check if the mixin has a parent selector
-            if (!rule.parent.selector) {
-                result.warn('must be inside a selector');
+            const { lineHeight, fontSize, baseline } = params;
+            const { gridHeight, unit } = params.gridHeight;
+            let { leadingTop, leadingBottom } = params;
+            let marginTop, marginBottom, paddingTop, paddingBottom;
+
+            // *** CALCULATE BASELINE CORRECTION ***
+            // the distance of the original baseline from the bottom
+            const baselineFromBottom = (lineHeight - fontSize) / 2 + fontSize * baseline;
+            // the corrected baseline will be on the nearest gridline
+            const correctedBaseline = Math.round(baselineFromBottom);
+            // the difference between the original and the corrected baseline
+            const baselineDifference = correctedBaseline - baselineFromBottom;
+            const shift = baselineDifference < 0 ? 0 : 1;
+
+            if (params.useBaselineOrigin) {
+                // substract the distance of the baseline from the edges
+                leadingTop -= (lineHeight - correctedBaseline);
+                leadingBottom -= correctedBaseline;
             }
+
+            marginTop = leadingTop - shift;
+            paddingTop = shift - baselineDifference;
+            paddingBottom = 1 - shift + baselineDifference;
+            marginBottom = leadingBottom + shift - 1;
         });
     };
 });
