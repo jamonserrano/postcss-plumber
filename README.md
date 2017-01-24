@@ -3,11 +3,11 @@ https://jamonserrano.github.io/plumber-sass
 
 Create better looking documents and speed up CSS development by adding vertical rhythm to your page.
 
+> Looking for the SASS version? Go to https://jamonserrano.github.io/plumber-sass
 
 ## Installation
 
-### NPM / Yarn
-Install:
+Install with npm or Yarn:
 
 ```sh
 # NPM
@@ -22,12 +22,19 @@ $ yarn add postcss-plumber --dev
 
 2\. Look up the baseline ratio of your font family [in the table](https://jamonserrano.github.io/plumber-sass/baselines/) or [use the measure tool](https://jamonserrano.github.io/plumber-sass/measure/). For example the value for Roboto is 0.158203.
 
-3\. Add Plumber to your postcss plugins:
+3\. Add Plumber to your postcss plugins (refer to the documentation of postcss and your preferred build tool):
+
 ```js
-// TODO
+// gulpfile.js
+...
+postcss([
+	require('postcss-plumber')()
+])
+...
 ```
 
-4\. Include the `@plumber` at-rule in your styles – specify font size as a fraction, line height, top and bottom leadings as multiples of the grid height:
+4\. Include the `@plumber` rule in your styles and specify parameters as properties: font size as a fraction, line height, top and bottom leadings as multiples of the grid height:
+
 ```css
 p {
 	@plumber {
@@ -57,10 +64,23 @@ p {
 ```
 
 ### Default settings
-To avoid repetition set up default values in the plugin:
+
+To avoid repetition set up default values in the plugin configuration:
 
 ```js
-// TODO
+// gulpfile.js
+...
+postcss([
+	require('postcss-plumber')({
+		gridHeight: '1rem',
+		baseline: 0.158203,
+		fontSize: 1.75,
+		lineHeight: 3,
+		leadingTop: 1,
+		leadingBottom: 2
+	})
+])
+...
 ```
 
 ```css
@@ -81,7 +101,7 @@ li {
 
 ### Using multiple fonts
 
-When using multiple font families just add different `$baseline` parameters:
+When using multiple font families just add different `baseline` parameters:
 
 ```css
 p {
@@ -103,11 +123,15 @@ blockquote {
 For responsive typography define the grid height in rems or other relative units, and metrics will change along.
 
 ```js
-// TODO
-{
-	gridHeight: '1rem',
-	fontSize: 1.75
-}
+// gulpfile.js
+...
+postcss([
+	require('postcss-plumber')({
+		gridHeight: '1rem',
+		fontSize: 1.75
+	})
+])
+...
 ```
 
 ```css
@@ -115,7 +139,7 @@ html {
 	font-size: 8px;
 	// grid height => 8px, font size => 14px
 	
-	@media screen and (min-width: 641px) {
+	@media min-width: 641px) {
 		font-size: 12px;
 		// grid-height => 12px, font size => 21px
 	}
@@ -126,11 +150,27 @@ html {
 Leadings are measured from the top and bottom edges of the text block by default. To measure them from the baseline, set `useBaselineOrigin: true` in the plugin options:
 
 ```js
-// TODO
-{
-	useBaselineOrigin: true
+// gulpfile.js
+...
+postcss([
+	require('postcss-plumber')({
+		useBaselineOrigin: 1
+	})
+])
+...
+```
+
+… or `use-baseline-origin: 1` in your css:
+
+```css
+p {
+	@plumber {
+		use-baseline-origin: 1;
+		...
+	}
 }
 ```
+
 
 ## Considerations
 
@@ -153,7 +193,7 @@ While supported, using vh, vw, vmin, vmax for the grid height can lead to catast
 Plumber’s use of collapsing margins makes it possible to set the minimum distance between blocks of texts. If you don’t need this, you can set either `leading-top` or `leading-bottom` to 0.
 
 ### CSS validity
-If you must have valid CSS before processing, use [custom properties](https://developer.mozilla.org/en-US/docs/Web/CSS/--*) in the `@plumber` rule:
+If you need valid CSS before processing, use [custom properties](https://developer.mozilla.org/en-US/docs/Web/CSS/--*) in the `@plumber` rule:
 
 ```css
 p {
@@ -170,25 +210,27 @@ p {
 
 ## API
 
-### plumber
+### @plumber
 The main rule.
 
-**Parameters:** All parameters are optional, default values can be changed in the plugin options.
+**Properties:** All parameters are optional, default values can be set in the plugin options.
 
 
-Name | Description | Type | Default value
+CSS (JS) property | Description | Type | Default value
 ---- | ----------- | ---- | -------------
-baseline | Baseline ratio | Fraction between 0 and 1 | —
-font-size | Font size as a fraction of grid height | Positive number | 2
-grid-height | Grid height | Any unit | 1rem
-leading-top | Top leading* as a multiple of grid height | Integer | 0**
-leading-bottom | Bottom leading* as a multiple of grid height | Integer | 0**
-line-height | Line height as a multiple of grid height| Positive integer | 3
-use-baseline-origin | Set the origin of leadings to the baseline | Boolean | false
+baseline (baseline) | Baseline ratio | Fraction between 0 and 1 | —*
+font-size (fontSize) | Font size as a fraction of grid height | Positive number | 2
+grid-height (gridHeight) | Grid height | Any unit | 1rem
+leading-top (leadingTop) | Top leading<sup>†</sup> as a multiple of grid height | Integer | 0<sup>‡</sup>
+leading-bottom (leadingBottom) | Bottom leading<sup>†</sup> as a multiple of grid height | Integer | 0<sup>‡</sup>
+line-height (lineHeight) | Line height as a multiple of grid height| Positive integer | 3
+use-baseline-origin (useBaselineOrigin) | Set the origin of leadings to the baseline | 0 or 1 | 0
 
-> \* Leadings are measured from either the baseline or the edges of the text block, depending on the `use-baseline-origin` setting.
+> \* Baseline must be provided either in the plugin options or in the rule properties.
+>
+> † Leadings are measured from either the baseline or the edges of the text block, depending on the `use-baseline-origin` (`useBaselineOrigin`) setting.
 > 
-> \*\* The default value is always calculated so there will be no visible gap above or below the text block.
+> ‡ The default value is always calculated so there will be no visible gap above or below the text block.
 
 **Output:** `font-size`, `line-height`, `margin-top`, `padding-top`, `padding-bottom`, `margin-bottom` properties with the same unit as the grid height.
 
