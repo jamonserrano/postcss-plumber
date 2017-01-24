@@ -1,13 +1,8 @@
-# Postcss plugin for [Plumber](https://jamonserrano.github.io/plumber-sass)
-
+# Postcss plugin for Plumber
+https://jamonserrano.github.io/plumber-sass
 
 Create better looking documents and speed up CSS development by adding vertical rhythm to your page.
 
-## What is it?
-
-Using a baseline grid on the web is not easy. For every font family and size you have to measure where the letters sit so you can shift the text to the nearest gridline. After this, you have to precariously add margins and paddings to keep the vertical rhythm.
-
-Plumber provides a postcss plugin that does all the hard work for you.
 
 ## Installation
 
@@ -55,7 +50,7 @@ p {
 	line-height: 3rem;
 	margin-top: 0;
 	padding-top: 0.901855rem;
-  	padding-bottom: 0.098145rem;
+	padding-bottom: 0.098145rem;
 	margin-bottom: 2rem;
 	font-family: Roboto, sans-serif;
 }
@@ -171,7 +166,7 @@ p {
 		--leading-bottom: 2;
 	};
 }
-```css
+```
 
 ## API
 
@@ -199,4 +194,3 @@ use-baseline-origin | Set the origin of leadings to the baseline | Boolean | fal
 
 ## License
 MIT License
-
