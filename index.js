@@ -8,7 +8,7 @@ const defaults = {
     lineHeight: 3,
     leadingTop: 1,
     leadingBottom: 2,
-    useBaselineOrigin: false
+    useBaselineOrigin: 0
 };
 
 // Converts css property names (including custom properties) to their javascript counterparts e.g.
@@ -76,12 +76,14 @@ const getBaselineCorrection = (lineHeight, fontSize, baseline) => {
 
 module.exports = postcss.plugin(pluginName, (options = {}) => {
     // merge default and passed options
+    // todo validate passed options
     options = Object.assign(defaults, options);
     return function (css) {
         css.walkAtRules(pluginName, rule => {
             // merge current parameters into options
             let params = Object.assign({}, options);
             rule.walkDecls(decl => {
+                // todo validate params
                 params[toCamelCase(decl.prop)] = decl.value;
             });
 
