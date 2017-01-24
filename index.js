@@ -27,6 +27,50 @@ const toKebabCase = (value) => {
 // Round value to the nearest quarter pixel
 const round = (value) => Math.round(value * 4) / 4;
 
+const sanitizeParams = (params) => {
+    Object.keys(params).forEach(prop => {
+        let value = params[prop];
+        // separate value and unit
+        if (prop === 'gridHeight') {
+            const match = unitRegExp.exec(value);
+            value = {
+                gridHeight: Number(match[1]),
+                unit: match[2]
+            };
+        } else {
+            value = Number(value);
+        }
+        params[prop] = value;
+    });
+
+    return params;
+};
+
+const generateDeclarations = (values, unit) => {
+    let declarations = [];
+    Object.keys(values).forEach(prop => {
+        declarations.push(
+            postcss.decl({
+                prop: toKebabCase(prop),
+                value: values[prop].toFixed(6) + unit
+            })
+        );
+    });
+
+    return declarations;
+};
+
+const getBaselineCorrection = (lineHeight, fontSize, baseline) => {
+    // the distance of the original baseline from the bottom
+    const baselineFromBottom = (lineHeight - fontSize) / 2 + fontSize * baseline;
+    // the corrected baseline will be on the nearest gridline
+    const correctedBaseline = Math.round(baselineFromBottom);
+    // the difference between the original and the corrected baseline
+    const baselineDifference = correctedBaseline - baselineFromBottom;
+
+    return { correctedBaseline, baselineDifference };
+};
+
 module.exports = postcss.plugin(pluginName, (options = {}) => {
     // merge default and passed options
     options = Object.assign(defaults, options);
@@ -39,40 +83,26 @@ module.exports = postcss.plugin(pluginName, (options = {}) => {
             });
 
             // sanitize values
-            Object.keys(params).forEach(prop => {
-                let value = params[prop];
-                // separate value and unit
-                if (prop === 'gridHeight') {
-                    const match = unitRegExp.exec(value);
-                    value = {
-                        gridHeight: Number(match[1]),
-                        unit: match[2]
-                    };
-                } else {
-                    value = Number(value);
-                }
-                params[prop] = value;
-            });
+            params = sanitizeParams(params);
 
             const { baseline } = params;
             const { gridHeight, unit } = params.gridHeight;
             let { fontSize, lineHeight, leadingTop, leadingBottom } = params;
             let marginTop, marginBottom, paddingTop, paddingBottom;
 
-            // *** CALCULATE BASELINE CORRECTION ***
-            // the distance of the original baseline from the bottom
-            const baselineFromBottom = (lineHeight - fontSize) / 2 + fontSize * baseline;
-            // the corrected baseline will be on the nearest gridline
-            const correctedBaseline = Math.round(baselineFromBottom);
-            // the difference between the original and the corrected baseline
-            const baselineDifference = correctedBaseline - baselineFromBottom;
-            const shift = baselineDifference < 0 ? 0 : 1;
+            const { correctedBaseline, baselineDifference } = getBaselineCorrection(
+                lineHeight,
+                fontSize,
+                baseline
+            );
 
             if (params.useBaselineOrigin) {
                 // substract the distance of the baseline from the edges
                 leadingTop -= (lineHeight - correctedBaseline);
                 leadingBottom -= correctedBaseline;
             }
+
+            const shift = baselineDifference < 0 ? 0 : 1;
 
             fontSize = fontSize * gridHeight;
             lineHeight = lineHeight * gridHeight;
@@ -97,17 +127,7 @@ module.exports = postcss.plugin(pluginName, (options = {}) => {
 
             Object.assign(computedValues, { fontSize });
 
-            let declarations = [];
-            Object.keys(computedValues).forEach(prop => {
-                declarations.push(
-                    postcss.decl({
-                        prop: toKebabCase(prop),
-                        value: computedValues[prop].toFixed(6) + unit
-                    })
-                );
-            });
-
-            rule.replaceWith(declarations);
+            rule.replaceWith(generateDeclarations(computedValues, unit));
         });
     };
 });
