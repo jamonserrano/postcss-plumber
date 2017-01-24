@@ -32,14 +32,22 @@
     "xo": "^0.17.1"
   },
   "dependencies": {
-    "camelcase": "^4.0.0",
     "postcss": "^5.2.11"
   },
   "xo": {
-    "rules" : {
-      "max-len": [1, 100, 2],
-      "no-mixed-operators": 1,
-      "no-extra-parens": 0
+    "rules": {
+      "max-len": [
+        1,
+        100,
+        2
+      ],
+      "no-mixed-operators": 0,
+      "no-extra-parens": 0,
+      "one-var": 0,
+      "no-warning-comments": 0,
+      "arrow-parens": 0,
+      "operator-assignment": 0,
+      "prefer-arrow-callback": 0
     }
   }
 }

@@ -1,5 +1,4 @@
 const postcss = require('postcss');
-const camelCase = require('camelcase');
 
 const pluginName = 'plumber';
 const unitRegExp = /^(\d+(?:\.\d+)?)([a-z]{1,4})$/;
@@ -12,15 +11,31 @@ const defaults = {
     useBaselineOrigin: false
 };
 
+// Converts css property names (including custom properties) to their javascript counterparts e.g.
+// font-size -> fontSize
+// --grid-height -> gridHeight
+const toCamelCase = (value) => {
+    return value.replace(/^-+/, '').replace(/-([a-z])/g, (nothing, match) => match.toUpperCase());
+};
+
+// Converts javascript property names to their css counterparts e.g.
+// fontSize -> font-size
+const toKebabCase = (value) => {
+    return value.replace(/([A-Z])/g, (match) => '-' + match.toLowerCase());
+};
+
+// Round value to the nearest quarter pixel
+const round = (value) => Math.round(value * 4) / 4;
+
 module.exports = postcss.plugin(pluginName, (options = {}) => {
     // merge default and passed options
     options = Object.assign(defaults, options);
-    return function (css, result) {
+    return function (css) {
         css.walkAtRules(pluginName, rule => {
             // merge current parameters into options
             let params = Object.assign({}, options);
             rule.walkDecls(decl => {
-                params[camelCase(decl.prop)] = decl.value;
+                params[toCamelCase(decl.prop)] = decl.value;
             });
 
             // sanitize values
@@ -30,7 +45,7 @@ module.exports = postcss.plugin(pluginName, (options = {}) => {
                 if (prop === 'gridHeight') {
                     const match = unitRegExp.exec(value);
                     value = {
-                        value: Number(match[1]),
+                        gridHeight: Number(match[1]),
                         unit: match[2]
                     };
                 } else {
@@ -39,9 +54,9 @@ module.exports = postcss.plugin(pluginName, (options = {}) => {
                 params[prop] = value;
             });
 
-            const { lineHeight, fontSize, baseline } = params;
+            const { baseline } = params;
             const { gridHeight, unit } = params.gridHeight;
-            let { leadingTop, leadingBottom } = params;
+            let { fontSize, lineHeight, leadingTop, leadingBottom } = params;
             let marginTop, marginBottom, paddingTop, paddingBottom;
 
             // *** CALCULATE BASELINE CORRECTION ***
@@ -59,10 +74,40 @@ module.exports = postcss.plugin(pluginName, (options = {}) => {
                 leadingBottom -= correctedBaseline;
             }
 
-            marginTop = leadingTop - shift;
-            paddingTop = shift - baselineDifference;
-            paddingBottom = 1 - shift + baselineDifference;
-            marginBottom = leadingBottom + shift - 1;
+            fontSize = fontSize * gridHeight;
+            lineHeight = lineHeight * gridHeight;
+            marginTop = (leadingTop - shift) * gridHeight;
+            paddingTop = (shift - baselineDifference) * gridHeight;
+            paddingBottom = (1 - shift + baselineDifference) * gridHeight;
+            marginBottom = (leadingBottom + shift - 1) * gridHeight;
+
+            let computedValues = {
+                lineHeight,
+                marginTop,
+                paddingTop,
+                paddingBottom,
+                marginBottom
+            };
+
+            if (unit === 'px') {
+                Object.keys(computedValues).forEach(function (prop) {
+                    computedValues[prop] = round(computedValues[prop]);
+                });
+            }
+
+            Object.assign(computedValues, { fontSize });
+
+            let declarations = [];
+            Object.keys(computedValues).forEach(prop => {
+                declarations.push(
+                    postcss.decl({
+                        prop: toKebabCase(prop),
+                        value: computedValues[prop].toFixed(6) + unit
+                    })
+                );
+            });
+
+            rule.replaceWith(declarations);
         });
     };
 });
