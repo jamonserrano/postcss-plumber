@@ -49,10 +49,13 @@ const sanitizeParams = (params) => {
 const generateDeclarations = (values, unit) => {
     let declarations = [];
     Object.keys(values).forEach(prop => {
+        // http://stackoverflow.com/a/18358056
+        const value = Number(Math.round(values[prop] + 'e+6') + 'e-6');
+
         declarations.push(
             postcss.decl({
                 prop: toKebabCase(prop),
-                value: values[prop].toFixed(6) + unit
+                value: value + (value === 0 ? '' : unit)
             })
         );
     });
