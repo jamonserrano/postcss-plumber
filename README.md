@@ -137,11 +137,11 @@ postcss([
 ```css
 html {
 	font-size: 8px;
-	// grid height => 8px, font size => 14px
+	/* grid height => 8px, font size => 14px */
 	
 	@media min-width: 641px) {
 		font-size: 12px;
-		// grid-height => 12px, font size => 21px
+		/* grid-height => 12px, font size => 21px */
 	}
 }
 ```
